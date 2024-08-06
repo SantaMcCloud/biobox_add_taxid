@@ -1,5 +1,6 @@
 import argparse
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         prog="biobox_add_taxid",
@@ -7,25 +8,53 @@ def parse_arguments():
             When using GTDB as tool type you also have to include the gtdb_to_taxdump [ncbi-gtdb_map.py] output and the taxonkit [name2taxid.py] output as input and the column in where the names are in the taxonkit output!",
         usage="biobox_add_taxid biobox_file {BAT | GTDB} input [--gtdb_to_taxdump GTDB_TO_TAXDUM | -g GTDB_TO_TAXDUM] [ --taxonkit TAXONKIT | -t TAXONKIT] [--column COLUMN | -c COLUMN]",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        add_help=True
+        add_help=True,
     )
 
-    optional = parser.add_argument_group('optional arguments')
-    
-    parser.add_argument("biobox_file", type=str, help="Input the binning file in biobox format here")
-    parser.add_argument("tool_type", type=str, choices=["BAT", "GTDB"], help="Select the tool from which the output is used here")
-    parser.add_argument("input", type=str, help="Include the input file here. When you using BAT as tool type then you can directly include the file here")
+    optional = parser.add_argument_group("optional arguments")
+
+    parser.add_argument(
+        "biobox_file", type=str, help="Input the binning file in biobox format here"
+    )
+    parser.add_argument(
+        "tool_type",
+        type=str,
+        choices=["BAT", "GTDB"],
+        help="Select the tool from which the output is used here",
+    )
+    parser.add_argument(
+        "input",
+        type=str,
+        help="Include the input file here. When you using BAT as tool type then you can directly include the file here",
+    )
     parser.add_argument("--version", action="version", version="0.1")
 
-    optional.add_argument("--gtdb_to_taxdump", "-g", type=str, help="When GTDB is selected as tool_type you can include the ncbi-gtdb_map.py output here")
-    optional.add_argument("--taxonkit", "-t", type=str, help="When GTDB is selected as tool_type you can include the name2taxid.py output here")
-    optional.add_argument("--column", "-c", type=int, default=0, help="Set the column for the taxonkit [name2taxid] in which the names are")
-    
+    optional.add_argument(
+        "--gtdb_to_taxdump",
+        "-g",
+        type=str,
+        help="When GTDB is selected as tool_type you can include the ncbi-gtdb_map.py output here",
+    )
+    optional.add_argument(
+        "--taxonkit",
+        "-t",
+        type=str,
+        help="When GTDB is selected as tool_type you can include the name2taxid.py output here",
+    )
+    optional.add_argument(
+        "--column",
+        "-c",
+        type=int,
+        default=0,
+        help="Set the column for the taxonkit [name2taxid] in which the names are",
+    )
+
     parser.print_usage = parser.print_help
 
     args = parser.parse_args()
 
     return args
+
 
 def load_biobox_file(biobox_file):
     print("Start with extracting of the biobox file.")
@@ -39,6 +68,7 @@ def load_biobox_file(biobox_file):
             seqid, binid = line.split("\t")
             biobox[binid] = seqid
     return biobox
+
 
 def load_gtdb_files(input):
     gtdb_mapping = {}
@@ -58,6 +88,7 @@ def load_gtdb_files(input):
             gtdb_mapping[binid] = name
     return gtdb_mapping
 
+
 def load_bat_file(input):
     print("Start with extracting the taxid from the BAT file.")
     print(f"Load {input}")
@@ -71,6 +102,7 @@ def load_bat_file(input):
             taxid = line[3].split(";")[-1]
             bat[binid] = taxid
     return bat
+
 
 def load_taxonkit(taxonkit_file, c):
     taxonkit = {}
@@ -86,6 +118,7 @@ def load_taxonkit(taxonkit_file, c):
             taxonkit[name] = taxid
     return taxonkit
 
+
 def load_gtdb_to_taxdump(gtdb_to_taxdump_file):
     gtdb_ncbi = {}
     print("Start with mapping the GTDB names to the NCBI names")
@@ -100,7 +133,10 @@ def load_gtdb_to_taxdump(gtdb_to_taxdump_file):
             gtdb_ncbi[gtdb] = ncbi
     return gtdb_ncbi
 
-def create_file(mode, biobox_file, biobox_dic, input_dic, taxonkit_dic, gtdb_to_taxdump_dic):
+
+def create_file(
+    mode, biobox_file, biobox_dic, input_dic, taxonkit_dic, gtdb_to_taxdump_dic
+):
     print("Create the new binning file in biobox format with the added taxid column")
     file_name = biobox_file + "added_taxid"
     with open(file_name, "w") as file:
@@ -126,21 +162,29 @@ def create_file(mode, biobox_file, biobox_dic, input_dic, taxonkit_dic, gtdb_to_
                 taxid = input_dic[binid]
             file.write(f"{seqid}\t{binid}\t{taxid}\n")
 
+
 if __name__ == "__main__":
     args = parse_arguments()
-    
+
     if args.tool_type == "GTDB":
         if args.taxonkit is None or args.gtdb_to_taxdump is None:
-            print(f"You used {args.tool_type} as tool type this means you also have to include the taxonkit [name2taxid] output and the gtdb_to_taxdump [ncbi-gtdb_map] output. \n The input here for Taxonkit was: {args.taxonkit} and the input here for gtdb_to_taxdump was: {args.gtdb_to_taxdump}")
+            print(
+                f"You used {args.tool_type} as tool type this means you also have to include the taxonkit [name2taxid] output and the gtdb_to_taxdump [ncbi-gtdb_map] output. \n The input here for Taxonkit was: {args.taxonkit} and the input here for gtdb_to_taxdump was: {args.gtdb_to_taxdump}"
+            )
         else:
             biobox_dic = load_biobox_file(args.biobox_file)
             input_dic = load_gtdb_files(args.input)
             taxonkit_dic = load_taxonkit(args.taxonkit, args.column)
             gtdb_to_taxdump_dic = load_gtdb_to_taxdump(args.gtdb_to_taxdump)
-            create_file(args.tool_type, args.biobox_file, biobox_dic, input_dic, taxonkit_dic, gtdb_to_taxdump_dic)
+            create_file(
+                args.tool_type,
+                args.biobox_file,
+                biobox_dic,
+                input_dic,
+                taxonkit_dic,
+                gtdb_to_taxdump_dic,
+            )
     else:
         biobox_dic = load_biobox_file(args.biobox_file)
         input_dic = load_bat_file(args.input)
         create_file(args.tool_type, args.biobox_file, biobox_dic, input_dic, None, None)
-
-    
