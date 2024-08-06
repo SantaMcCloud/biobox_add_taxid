@@ -1,6 +1,4 @@
 import argparse
-import os
-from typing import Optional, Required
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
