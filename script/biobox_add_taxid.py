@@ -64,9 +64,9 @@ def load_biobox_file(biobox_file):
         for line in file:
             if line.startswith("@") or line.startswith("#"):
                 continue
-            line.replace("\n", "")
+            line = line.replace("\n", "")
             seqid, binid = line.split("\t")
-            biobox[binid] = seqid
+            biobox[seqid] = binid
     return biobox
 
 
@@ -78,6 +78,7 @@ def load_gtdb_files(input):
         for lines in f:
             if lines.startswith("user_genome") or lines.startswith("#"):
                 continue
+            lines = lines.replace("\n", "")
             line = lines.split("\t")
             binid = line[0]
             if ";" in line[1]:
@@ -97,8 +98,9 @@ def load_bat_file(input):
         for lines in file:
             if lines.startswith("#"):
                 continue
+            lines = lines.replace("\n", "")
             line = lines.split("\t")
-            binid = line[0]
+            binid = line[0].split(".")[0]
             taxid = line[3].split(";")[-1]
             bat[binid] = taxid
     return bat
@@ -112,6 +114,7 @@ def load_taxonkit(taxonkit_file, c):
         for lines in file:
             if lines.startswith("#"):
                 continue
+            lines = lines.replace("\n", "")
             line = lines.split("\t")
             name = line[c]
             taxid = line[-1]
@@ -125,8 +128,9 @@ def load_gtdb_to_taxdump(gtdb_to_taxdump_file):
     print(f"Load {gtdb_to_taxdump_file}")
     with open(gtdb_to_taxdump_file, "r") as file:
         for lines in file:
-            if lines.startswith("#"):
+            if lines.startswith("#") or lines.startswith("ncbi_taxonomy"):
                 continue
+            lines = lines.replace("\n", "")
             line = lines.split("\t")
             gtdb = line[0]
             ncbi = line[1]
@@ -138,28 +142,28 @@ def create_file(
     mode, biobox_file, biobox_dic, input_dic, taxonkit_dic, gtdb_to_taxdump_dic
 ):
     print("Create the new binning file in biobox format with the added taxid column")
-    file_name = biobox_file + "added_taxid"
-    with open(file_name, "w") as file:
+    file_name = biobox_file.split(".")
+    with open(
+        "./{0}_add_taxid.{1}".format(file_name[0].split("/")[-1], file_name[1]), "w"
+    ) as file:
         file.write("#CAMI Format for Binning\n")
         file.write("@Version:0.9.0\n")
         file.write("@SampleID:_SAMPLEID_\n")
         file.write("@@SEQUENCEID\tBINID\tTAXID\n")
-        for binid in biobox_dic.keys():
-            seqid = biobox_dic[binid]
+        for seqid in biobox_dic.keys():
+            binid = biobox_dic[seqid]
             if mode == "GTDB":
                 gtdb_name = input_dic[binid]
                 ncbi_name = gtdb_to_taxdump_dic[gtdb_name]
                 if ncbi_name in taxonkit_dic.keys():
                     taxid = taxonkit_dic[ncbi_name]
-                elif ncbi_name.split("_")[-1] in taxonkit_dic.keys():
-                    ncbi_name = ncbi_name.split("_")[-1]
-                    taxid = taxonkit_dic[ncbi_name]
                 else:
                     ncbi_name = ncbi_name.split("_")[-1]
-                    ncbi_name[0].Upper()
                     taxid = taxonkit_dic[ncbi_name]
             else:
                 taxid = input_dic[binid]
+                if "*" in taxid:
+                    taxid = taxid[:-1]
             file.write(f"{seqid}\t{binid}\t{taxid}\n")
 
 
