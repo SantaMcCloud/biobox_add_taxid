@@ -170,7 +170,7 @@ def load_gtdb_to_taxdump(gtdb_to_taxdump_file):
     """
     When the tool_type is set to GTDB then the tool also need the output from the tool ncbi-gtdb_map.py from gtdb_to_taxdump.
     
-    Here the tool use the first column as gtdb_name since and the second column are the ncbi_names since ncbi-gtdb_map.py take the gtdb_names and will output the ncbi taxonmy
+    Here the tool use the first column as gtdb_name since and the second column are the ncbi_names since ncbi-gtdb_map.py take the gtdb_names and will output the ncbi taxonomy
     related the the gtdb_names.
 
     Every row starting with # will be ignore in this function because the user dont have to write a new file each time and can take out row which they dont need.
