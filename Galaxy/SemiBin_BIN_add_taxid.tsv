@@ -1,6 +1,6 @@
 #CAMI Format for Binning
 @Version:0.9.0
-@SampleID:_SAMPLEID_
+@SampleID:gsa
 @@SEQUENCEID	BINID	TAXID
 RL|S1|C2	SemiBin_0	264463
 RL|S1|C24	SemiBin_0	264463
