@@ -205,7 +205,7 @@ def create_file(
     taxonkit_dic: Is None since when the tool_type is BAT it is not needed or it is the ncbi_name to taxid mapping when the tool_type is GTDB.
     gtdb_to_taxdump_dic: Is None since when the tool_type is BAT it is not needed or it is the gtdb_name to ncbi_name mapping when the tool_type is GTDB.
 
-    In here the tool will create a new file with the name of the biobox_file + _add_taxid. In this file the tool will write the typical 4 rows since which are always in a binning file.
+    In here the tool will create a new file with the name of the biobox_file + _add_taxid + tool_type. In this file the tool will write the typical 4 rows since which are always in a binning file.
 
     The Tool always read out the seqid which are the keys in the biobox_dic to get the binid according to the seqid. After this step the tool have 2 different ways to get to the taxid according to the binid.
 
@@ -224,7 +224,7 @@ def create_file(
     print("Create the new binning file in biobox format with the added taxid column")
     file_name = biobox_file.split(".")
     with open(
-        "./{0}_add_taxid.{1}".format(file_name[0].split("/")[-1], file_name[1]), "w"
+        "./{0}_add_taxid_{1}.{2}".format(file_name[0].split("/")[-1], mode, file_name[1]), "w"
     ) as file:
         file.write("#CAMI Format for Binning\n")
         file.write("@Version:0.9.0\n")
