@@ -1,4 +1,5 @@
 import argparse
+import os
 
 
 def parse_arguments():
@@ -13,7 +14,7 @@ def parse_arguments():
         prog="biobox_add_taxid",
         description="Script for adding the taxids into the biobox format for CAMI Amber from BAT or GTDB-Tk with the help of different tools. \
             When using GTDB as tool type you also have to include the gtdb_to_taxdump [ncbi-gtdb_map.py] output and the taxonkit [name2taxid.py] output as input and the column in where the names are in the taxonkit output!",
-        usage="biobox_add_taxid biobox_file {BAT | GTDB} input [--gtdb_to_taxdump GTDB_TO_TAXDUM | -g GTDB_TO_TAXDUM] [ --taxonkit TAXONKIT | -t TAXONKIT] [--column COLUMN | -c COLUMN]",
+        usage="biobox_add_taxid biobox_file {BAT | GTDB} input_dir [--gtdb_to_taxdump GTDB_TO_TAXDUM | -g GTDB_TO_TAXDUM] [ --taxonkit TAXONKIT | -t TAXONKIT] [--column COLUMN | -c COLUMN]",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         add_help=True,
     )
@@ -30,9 +31,9 @@ def parse_arguments():
         help="Select the tool from which the output is used here",
     )
     parser.add_argument(
-        "input",
+        "input_dir",
         type=str,
-        help="Include the input file here. When using BAT use the bin2classification file and when using GTDB then use the summary file",
+        help="Include the directory where the input file(s) are stored here. When using BAT use the bin2classification file and when using GTDB then use the summary file",
     )
     parser.add_argument("--version", action="version", version="0.1")
 
@@ -85,7 +86,7 @@ def load_biobox_file(biobox_file):
     return biobox
 
 
-def load_gtdb_files(input):
+def load_gtdb_files(input_dir):
     """
     When the tool_type is set to GTDB then this function will be call to save a certain mapping form the input, in this case the summary file from GTDB-Tk.
 
@@ -97,24 +98,25 @@ def load_gtdb_files(input):
     """
     gtdb_mapping = {}
     print("Start with extracting the names from the GTDB file.")
-    print(f"Load file: {input}")
-    with open(input, "r") as f:
-        for lines in f:
-            if lines.startswith("user_genome") or lines.startswith("#"):
-                continue
-            lines = lines.replace("\n", "")
-            line = lines.split("\t")
-            binid = line[0]
-            if ";" in line[1]:
-                lineage = line[1].split(";")
-                name = lineage[-1]
-            else:
-                name = line[1]
-            gtdb_mapping[binid] = name
+    for input in os.listdir(input_dir):
+        print(f"Load file: {input}")
+        with open(input_dir + input, "r") as f:
+            for lines in f:
+                if lines.startswith("user_genome") or lines.startswith("#"):
+                    continue
+                lines = lines.replace("\n", "")
+                line = lines.split("\t")
+                binid = line[0]
+                if ";" in line[1]:
+                    lineage = line[1].split(";")
+                    name = lineage[-1]
+                else:
+                    name = line[1]
+                gtdb_mapping[binid] = name
     return gtdb_mapping
 
 
-def load_bat_file(input):
+def load_bat_file(input_dir):
     """
     When the tool_type is set to BAT then this function will be call to save a certain mapping form the input, in this case the bin2classification file from BAT.
 
@@ -125,17 +127,18 @@ def load_bat_file(input):
     As output the tool will return the binid to taxid mapping to use it later.
     """
     print("Start with extracting the taxid from the BAT file.")
-    print(f"Load {input}")
     bat = {}
-    with open(input, "r") as file:
-        for lines in file:
-            if lines.startswith("#"):
-                continue
-            lines = lines.replace("\n", "")
-            line = lines.split("\t")
-            binid = line[0].split(".")[0]
-            taxid = line[3].split(";")[-1]
-            bat[binid] = taxid
+    for input in os.listdir(input_dir):
+        print(f"Load {input}")
+        with open(input_dir + input, "r") as file:
+            for lines in file:
+                if lines.startswith("#"):
+                    continue
+                lines = lines.replace("\n", "")
+                line = lines.split("\t")
+                binid = line[0].split(".")[0]
+                taxid = line[3].split(";")[-1]
+                bat[binid] = taxid
     return bat
 
 
@@ -250,6 +253,11 @@ def create_file(
 if __name__ == "__main__":
     args = parse_arguments()
 
+    if args.input_dir.endswith("/"):
+        input_dir = args.input_dir
+    else:
+        input_dir = args.input_dir + "/"
+
     if args.tool_type == "GTDB":
         if args.taxonkit is None or args.gtdb_to_taxdump is None:
             print(
@@ -257,7 +265,7 @@ if __name__ == "__main__":
             )
         else:
             biobox_dic = load_biobox_file(args.biobox_file)
-            input_dic = load_gtdb_files(args.input)
+            input_dic = load_gtdb_files(input_dir)
             taxonkit_dic = load_taxonkit(args.taxonkit, args.column)
             gtdb_to_taxdump_dic = load_gtdb_to_taxdump(args.gtdb_to_taxdump)
             create_file(
@@ -270,5 +278,5 @@ if __name__ == "__main__":
             )
     else:
         biobox_dic = load_biobox_file(args.biobox_file)
-        input_dic = load_bat_file(args.input)
+        input_dic = load_bat_file(input_dir)
         create_file(args.tool_type, args.biobox_file, biobox_dic, input_dic, None, None)
