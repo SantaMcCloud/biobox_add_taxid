@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 desc = "utility script for adding taxid to a binning file in biobox format"
 setup(
     name="biobox_add_taxid",
-    version='0.2',
+    version='0.3',
     description=desc,
     long_description=desc + "\n See README for more information.",
     author="Santino Faack",
