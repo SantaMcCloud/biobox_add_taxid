@@ -36,7 +36,7 @@ def parse_arguments():
         type=str,
         help="Include the directory where the input file(s) are stored here. When using BAT use the bin2classification file and when using GTDB then use the summary file",
     )
-    parser.add_argument("--version", action="version", version="0.2")
+    parser.add_argument("--version", action="version", version="0.3")
 
     optional.add_argument(
         "--gtdb_to_taxdump",
