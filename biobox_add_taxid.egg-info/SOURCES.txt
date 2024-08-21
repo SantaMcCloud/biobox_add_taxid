@@ -1,0 +1,9 @@
+LICENSE
+README.md
+setup.py
+biobox_add_taxid.egg-info/PKG-INFO
+biobox_add_taxid.egg-info/SOURCES.txt
+biobox_add_taxid.egg-info/dependency_links.txt
+biobox_add_taxid.egg-info/top_level.txt
+script/__init__.py
+script/biobox_add_taxid.py
