@@ -164,7 +164,7 @@ def load_taxonkit(taxonkit_file, c):
                 continue
             lines = lines.replace("\n", "")
             line = lines.split("\t")
-            name = line[c]
+            name = line[c - 1]
             taxid = line[-1]
             taxonkit[name] = taxid
     return taxonkit
