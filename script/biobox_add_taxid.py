@@ -54,8 +54,8 @@ def parse_arguments():
         "--column",
         "-c",
         type=int,
-        default=0,
-        help="Set the column for the taxonkit [name2taxid] in which the names are",
+        default=1,
+        help="Set the column for the taxonkit [name2taxid] in which the names are. First column = 1, second column = 2 etc.",
     )
 
     parser.print_usage = parser.print_help
