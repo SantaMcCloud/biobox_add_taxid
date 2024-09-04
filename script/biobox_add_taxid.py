@@ -14,8 +14,8 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         prog="biobox_add_taxid",
         description="Script for adding the taxids into the biobox format for CAMI Amber from BAT or GTDB-Tk with the help of different tools. \
-            When using GTDB as tool type you also have to include the gtdb_to_taxdump [ncbi-gtdb_map.py] output and the taxonkit [name2taxid.py] output as input and the column in where the names are in the taxonkit output!",
-        usage="biobox_add_taxid biobox_file {BAT | GTDB} input_dir [--gtdb_to_taxdump GTDB_TO_TAXDUM | -g GTDB_TO_TAXDUM] [ --taxonkit TAXONKIT | -t TAXONKIT] [--column COLUMN | -c COLUMN]",
+            When using GTDB as tool type you also have to include the gtdb_to_taxdump [ncbi-gtdb_map.py] output(s) in a separated dir and the taxonkit [name2taxid.py] output(s) in a separated dir as input and the column in where the names are in the taxonkit output!",
+        usage="biobox_add_taxid biobox_file {BAT | GTDB} input_dir [--gtdb_to_taxdump_dir GTDB_TO_TAXDUM_PATH | -g GTDB_TO_TAXDUM_PATH] [ --taxonkit_dir TAXONKIT_PATH | -t TAXONKIT_PATH] [--column COLUMN | -c COLUMN]",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         add_help=True,
     )
@@ -39,23 +39,23 @@ def parse_arguments():
     parser.add_argument("--version", action="version", version="0.3")
 
     optional.add_argument(
-        "--gtdb_to_taxdump",
+        "--gtdb_to_taxdump_dir",
         "-g",
         type=str,
-        help="When GTDB is selected as tool_type you can include the ncbi-gtdb_map.py output here",
+        help="When GTDB is selected as tool_type you can include the ncbi-gtdb_map.py output(s) which has to be stored in a separated dir here.",
     )
     optional.add_argument(
-        "--taxonkit",
+        "--taxonkit_dir",
         "-t",
         type=str,
-        help="When GTDB is selected as tool_type you can include the name2taxid.py output here",
+        help="When GTDB is selected as tool_type you can include the name2taxid.py output(s) which has to be stored in a separated dir here.",
     )
     optional.add_argument(
         "--column",
         "-c",
         type=int,
         default=1,
-        help="Set the column for the taxonkit [name2taxid] in which the names are. First column = 1, second column = 2 etc.",
+        help="Set the column for the taxonkit [name2taxid] in which the names are. First column = 1, second column = 2 etc. IMPORTANT: PLEASE MAKE SURE THAT ALL FILES HAVE THE NAME COLUMN IN THE SAME POSITION!!!!!!",
     )
 
     parser.print_usage = parser.print_help
@@ -143,7 +143,7 @@ def load_bat_file(input_dir):
     return bat
 
 
-def load_taxonkit(taxonkit_file, c):
+def load_taxonkit(taxonkit_dir, c):
     """
     When the tool_type is set to GTDB then the tool also need the output from the tool name2taxid from taxonkit. Since it copy the hole file which was taken as input
     the tool also need to know in which column the names are stated.
@@ -157,20 +157,21 @@ def load_taxonkit(taxonkit_file, c):
     """
     taxonkit = {}
     print("Start with mapping the names to the taxids from the Taxonkit file.")
-    print(f"Load {taxonkit_file}")
-    with open(taxonkit_file, "r") as file:
-        for lines in file:
-            if lines.startswith("#"):
-                continue
-            lines = lines.replace("\n", "")
-            line = lines.split("\t")
-            name = line[c - 1]
-            taxid = line[-1]
-            taxonkit[name] = taxid
+    for file in os.listdir(taxonkit_dir):
+        print(f'Load file: {file}')
+        with open(taxonkit_dir + file, "r") as file:
+            for lines in file:
+                if lines.startswith("#"):
+                    continue
+                lines = lines.replace("\n", "")
+                line = lines.split("\t")
+                name = line[c - 1]
+                taxid = line[-1]
+                taxonkit[name] = taxid
     return taxonkit
 
 
-def load_gtdb_to_taxdump(gtdb_to_taxdump_file):
+def load_gtdb_to_taxdump(gtdb_to_taxdump_dir):
     """
     When the tool_type is set to GTDB then the tool also need the output from the tool ncbi-gtdb_map.py from gtdb_to_taxdump.
     
@@ -183,16 +184,17 @@ def load_gtdb_to_taxdump(gtdb_to_taxdump_file):
     """
     gtdb_ncbi = {}
     print("Start with mapping the GTDB names to the NCBI names")
-    print(f"Load {gtdb_to_taxdump_file}")
-    with open(gtdb_to_taxdump_file, "r") as file:
-        for lines in file:
-            if lines.startswith("#") or lines.startswith("ncbi_taxonomy"):
-                continue
-            lines = lines.replace("\n", "")
-            line = lines.split("\t")
-            gtdb = line[0]
-            ncbi = line[1]
-            gtdb_ncbi[gtdb] = ncbi
+    for file in os.listdir(gtdb_to_taxdump_dir):
+        print(f'Load file: {file}')
+        with open(gtdb_to_taxdump_dir + file, "r") as file:
+            for lines in file:
+                if lines.startswith("#") or lines.startswith("ncbi_taxonomy"):
+                    continue
+                lines = lines.replace("\n", "")
+                line = lines.split("\t")
+                gtdb = line[0]
+                ncbi = line[1]
+                gtdb_ncbi[gtdb] = ncbi
     return gtdb_ncbi
 
 
@@ -260,15 +262,25 @@ if __name__ == "__main__":
         input_dir = args.input_dir + "/"
 
     if args.tool_type == "GTDB":
-        if args.taxonkit is None or args.gtdb_to_taxdump is None:
+        if args.taxonkit_dir is None or args.gtdb_to_taxdump_dir is None:
             print(
-                f"You used {args.tool_type} as tool type this means you also have to include the taxonkit [name2taxid] output and the gtdb_to_taxdump [ncbi-gtdb_map] output. \n The input here for Taxonkit was: {args.taxonkit} and the input here for gtdb_to_taxdump was: {args.gtdb_to_taxdump}"
+                f"You used {args.tool_type} as tool type this means you also have to include the taxonkit [name2taxid] output(s) in a separated dir and the gtdb_to_taxdump [ncbi-gtdb_map] output(s) in a separated dir. \n The input here for Taxonkit was: {args.taxonkit_dir} and the input here for gtdb_to_taxdump was: {args.gtdb_to_taxdump_dir}"
             )
         else:
+            if args.taxonkit_dir.endswith("/"):
+                taxonkit_dir = args.taxonkit_dir
+            else:
+                taxonkit_dir = args.taxonkit_dir + "/"
+    
+            if args.gtdb_to_taxdump_dir.endswith("/"):
+                gtdb_to_taxdump_dir = args.gtdb_to_taxdump_dir
+            else:
+                gtdb_to_taxdump_dir = args.gtdb_to_taxdump_dir + "/"
+
             biobox_dic = load_biobox_file(args.biobox_file)
             input_dic = load_gtdb_files(input_dir)
-            taxonkit_dic = load_taxonkit(args.taxonkit, args.column)
-            gtdb_to_taxdump_dic = load_gtdb_to_taxdump(args.gtdb_to_taxdump)
+            taxonkit_dic = load_taxonkit(taxonkit_dir, args.column)
+            gtdb_to_taxdump_dic = load_gtdb_to_taxdump(gtdb_to_taxdump_dir)
             create_file(
                 args.tool_type,
                 args.biobox_file,
