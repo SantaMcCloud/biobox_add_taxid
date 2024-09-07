@@ -230,7 +230,7 @@ def create_file(
     print("Create the new binning file in biobox format with the added taxid column")
     file_name = biobox_file.split(".")
     with open(
-        "./{0}_add_taxid_{1}.{2}".format(file_name[0].split("/")[-1], mode, file_name[1]), "w"
+        "./{0}_add_taxid_{1}.tsv".format(file_name[0].split("/")[-1], mode), "w"
     ) as file:
         file.write("#CAMI Format for Binning\n")
         file.write("@Version:0.9.0\n")
