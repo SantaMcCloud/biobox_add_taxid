@@ -13,8 +13,8 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser(
         prog="biobox_add_taxid",
-        description="",
-        usage="",
+        description="This tool was designed to add a 'TaxID' column in a binning file in biobox format.",
+        usage="biobox_add_taxid biobox_file [(-c/--contig2taxid) CONTIG2TAXID/ (-b/--binid2taxid) BINID2TAXID]",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         add_help=True,
     )
@@ -72,7 +72,7 @@ def load_biobox_file(biobox_file):
     
 def load_contig2taxid_file(contig2taxid_file):
     """
-
+    Load the contig2taxid file into a dict to with the seqid as key and the taxid as value for each seqid.
     """
     print("Start with extracting of the biobox file.")
     print(f"Load {contig2taxid_file}")
@@ -89,7 +89,7 @@ def load_contig2taxid_file(contig2taxid_file):
 
 def laod_binid2taxid_file(binid2taxid_file):
     """
-
+    Load the binid2taxid file into a dict with the binid as key and the taxid as value.
     """
     print("Start with extracting of the biobox file.")
     print(f"Load {binid2taxid_file}")
@@ -106,6 +106,9 @@ def laod_binid2taxid_file(binid2taxid_file):
     return binid2taxid 
 
 def create_file(biobox, contig2taxid, binid2taxid):
+    """
+    Write the biobox file and add the TAXID column to it.
+    """
     print("Create the new binning file in biobox format with the added taxid column")
     with open("./modified_biobox_file.tsv", "w") as file:
         file.write("#CAMI Format for Binning\n")
