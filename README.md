@@ -14,4 +14,4 @@ ABC 888
 ....
 ```
 
-the important part of this is that the first column has to be the BinID column and the last column has to be the TaxID column. There can be more the this two column but the order has to be kept.
+It is important to state the column where either the BinID or the ContigID is stored together with the column where the TaxID is stored. The first column is 1 and the second 2 and so on!

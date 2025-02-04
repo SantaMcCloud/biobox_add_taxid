@@ -14,7 +14,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         prog="biobox_add_taxid",
         description="This tool was designed to add a 'TaxID' column in a binning file in biobox format.",
-        usage="biobox_add_taxid biobox_file [(-c/--contig2taxid) CONTIG2TAXID/ (-b/--binid2taxid) BINID2TAXID]",
+        usage="biobox_add_taxid biobox_file [(-c/--contig2taxid) CONTIG2TAXID/ (-b/--binid2taxid) BINID2TAXID] key_col taxid_col",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         add_help=True,
     )
@@ -23,6 +23,18 @@ def parse_arguments():
         "biobox_file", 
         type=str, 
         help="Input the binning file in biobox format here."
+    )
+
+    parser.add_argument(
+        "key_col",
+        type=int,
+        help="State the column in which the contigid or the binid is stated based on the which input is used"
+    )
+
+    parser.add_argument(
+        "taxid_col",
+        type=int,
+        help="State the column in which the taxid is stated"
     )
     
     parser.add_argument(
@@ -70,7 +82,7 @@ def load_biobox_file(biobox_file):
             biobox[seqid] = binid
     return biobox
     
-def load_contig2taxid_file(contig2taxid_file):
+def load_contig2taxid_file(contig2taxid_file, key_col, taxid_col):
     """
     Load the contig2taxid file into a dict to with the seqid as key and the taxid as value for each seqid.
     """
@@ -82,12 +94,12 @@ def load_contig2taxid_file(contig2taxid_file):
             if line.startswith("#"):
                 continue
             line = line.split("\t")
-            seqid = line[1]
-            taxid = line[2]
+            seqid = line[key_col - 1]
+            taxid = line[taxid_col -1]
             contig2taxid[seqid] = taxid
     return contig2taxid
 
-def laod_binid2taxid_file(binid2taxid_file):
+def laod_binid2taxid_file(binid2taxid_file, key_col, taxid_col):
     """
     Load the binid2taxid file into a dict with the binid as key and the taxid as value.
     """
@@ -100,8 +112,8 @@ def laod_binid2taxid_file(binid2taxid_file):
                 continue
             line = line.replace("\n","")
             line = line.split("\t")
-            binid = line[0]
-            taxid = line[-1]
+            binid = line[key_col - 1]
+            taxid = line[taxid_col - 1]
             binid2taxid[binid] = taxid
     return binid2taxid 
 
@@ -130,9 +142,9 @@ if __name__ == "__main__":
         sys.exit()
     if args.contig2taxid is None:
         biobox =  load_biobox_file(args.biobox_file)
-        binid2taxid = laod_binid2taxid_file(args.binid2taxid)
+        binid2taxid = laod_binid2taxid_file(args.binid2taxid, args.key_col, args.taxid_col)
         create_file(biobox, None, binid2taxid)
     else:
         biobox =  load_biobox_file(args.biobox_file)
-        contig2taxid = load_contig2taxid_file(args.contig2taxid)
+        contig2taxid = load_contig2taxid_file(args.contig2taxid, args.key_col, args.taxid_col)
         create_file(biobox, contig2taxid, None)
