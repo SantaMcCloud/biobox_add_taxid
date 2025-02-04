@@ -14,7 +14,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         prog="biobox_add_taxid",
         description="This tool was designed to add a 'TaxID' column in a binning file in biobox format.",
-        usage="biobox_add_taxid biobox_file [(-c/--contig2taxid) CONTIG2TAXID/ (-b/--binid2taxid) BINID2TAXID] key_col taxid_col",
+        usage="biobox_add_taxid biobox_file [(-c/--contig2taxid) CONTIG2TAXID/ (-b/--binid2taxid) BINID2TAXID] (-k_c/--key_col) KEY_COL (-t_c/--taxid_col) TAX_COL",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         add_help=True,
     )
@@ -26,14 +26,18 @@ def parse_arguments():
     )
 
     parser.add_argument(
-        "key_col",
+        "--key_col",
+        "-k_c",
         type=int,
+        default=None,
         help="State the column in which the contigid or the binid is stated based on the which input is used"
     )
 
     parser.add_argument(
-        "taxid_col",
+        "--taxid_col",
+        "-t_c",
         type=int,
+        default=None,
         help="State the column in which the taxid is stated"
     )
     
@@ -139,6 +143,12 @@ if __name__ == "__main__":
     args = parse_arguments()
     if args.contig2taxid is None and args.binid2taxid is None:
         print("Please input at least either a contig2taxid file or a binid2taxid file!")
+        sys.exit()
+    if args.key_col is None or args.taxid_col is None:
+        print("Please enter the column where the BinID/ContigID is stated and enter the column where the TaxID is stated.")
+        print("The followed was enter:")
+        print(f"KEY_COL:  {args.key_col}")
+        print(f"TAXID_COL: {args.taxid_col}")
         sys.exit()
     if args.contig2taxid is None:
         biobox =  load_biobox_file(args.biobox_file)
