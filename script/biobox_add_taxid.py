@@ -97,6 +97,7 @@ def load_contig2taxid_file(contig2taxid_file, key_col, taxid_col):
         for line in file:
             if line.startswith("#"):
                 continue
+            line = line.strip()
             line = line.split("\t")
             seqid = line[key_col - 1]
             taxid = line[taxid_col -1]
@@ -114,7 +115,7 @@ def laod_binid2taxid_file(binid2taxid_file, key_col, taxid_col):
         for line in file:
             if line.startswith("#"):
                 continue
-            line = line.replace("\n","")
+            line = line.strip()
             line = line.split("\t")
             binid = line[key_col - 1]
             taxid = line[taxid_col - 1]
