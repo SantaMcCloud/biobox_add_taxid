@@ -57,6 +57,13 @@ def parse_arguments():
         help="Input a binid2taxid file. The first column should be the BINID column and the last column should be the TAXID column."
     )
 
+    parser.add_argument(
+        "--debug",
+        default=False,
+        action='store_true',
+        help="Use this flag for debugging"
+    )
+
     parser.add_argument("--version", action="version", version="1.0")
 
     parser.print_usage = parser.print_help
@@ -142,6 +149,12 @@ def create_file(biobox, contig2taxid, binid2taxid):
 
 if __name__ == "__main__":
     args = parse_arguments()
+    if args.debug:
+        print(f"\nBIOBOX FILE: {args.biobox_file}")
+        print(f"BINID2TAXID FILE: {args.binid2taxid}")
+        print(f"CONTIG2TAXID FILE: {args.contig2taxid}")
+        print(f"KEY COLUMN: {args.key_col}")
+        print(f"TAXID COLUMN: {args.taxid_col}\n")
     if args.contig2taxid is None and args.binid2taxid is None:
         print("Please input at least either a contig2taxid file or a binid2taxid file!")
         sys.exit()
